@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  fullName  String
+  dni       Int       @unique(map: "User_dni_key")
+  email     String
+  phone     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  payment   payment[]
+  ticket    ticket[]
+
+  @@map("user")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  email     String   @unique(map: "Admin_email_key")
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin")
+}
+
+model payment {
+  id          Int            @id @default(autoincrement())
+  proofUrls   String         @db.LongText
+  method      String
+  currency    String
+  reference   String
+  status      payment_status @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime
+  quantity    Int
+  totalAmount Float
+  userId      Int
+  user        User           @relation(fields: [userId], references: [id], map: "Payment_userId_fkey")
+  ticket      ticket[]
+
+  @@index([userId], map: "Payment_userId_fkey")
+}
+
+model raffle {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String   @db.VarChar(1000)
+  price         Float
+  maxTickets    Int
+  maxTicketsBuy Int
+  bannerUrl     String
+  isActive      Boolean  @default(true)
+  isRandomized  Boolean  @default(false)
+  isHidden      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  ticket        ticket[]
+  winner        winner[]
+}
+
+model ticket {
+  id         Int           @id @default(autoincrement())
+  number     String
+  isBlessed  Boolean       @default(false)
+  status     ticket_status @default(AVAILABLE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime
+  reservedAt DateTime?
+  userId     Int?
+  raffleId   Int
+  paymentId  Int?
+  payment    payment?      @relation(fields: [paymentId], references: [id], map: "Ticket_paymentId_fkey")
+  raffle     raffle        @relation(fields: [raffleId], references: [id], map: "Ticket_raffleId_fkey")
+  user       User?         @relation(fields: [userId], references: [id], map: "Ticket_userId_fkey")
+  winner     winner?
+
+  @@unique([raffleId, number], map: "Ticket_raffleId_number_key")
+  @@index([paymentId], map: "Ticket_paymentId_fkey")
+  @@index([userId], map: "Ticket_userId_fkey")
+}
+
+model users {
+  id            Int        @id @default(autoincrement())
+  full_name     String
+  dni           Int        @unique(map: "unique_dni")
+  email         String
+  phone         String
+  password      String     @db.VarChar(255)
+  role          users_role @default(user)
+  refresh_token String?    @db.Text
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @default(now())
+}
+
+model winner {
+  id        Int      @id @default(autoincrement())
+  prize     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  ticketId  Int      @unique(map: "Winner_ticketId_key")
+  raffleId  Int
+  raffle    raffle   @relation(fields: [raffleId], references: [id], map: "Winner_raffleId_fkey")
+  ticket    ticket   @relation(fields: [ticketId], references: [id], map: "Winner_ticketId_fkey")
+
+  @@index([raffleId], map: "Winner_raffleId_fkey")
+}
+
+enum ticket_status {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+enum payment_status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum users_role {
+  user
+  admin
+}

@@ -1,0 +1,2 @@
+ADMIN_PASSWORD=Coma2025!xQ019
+JWT_SECRET=technohammerAdmin

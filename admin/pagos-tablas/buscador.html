@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buscar Ticket por Rifa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f4f4;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #e9ecef;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Buscar Ticket por Rifa</h1>
+
+    <label for="raffle-select">Selecciona una rifa:</label>
+    <select id="raffle-select">
+      <option value="">Cargando rifas...</option>
+    </select>
+
+    <label for="ticket-number">Número de Ticket:</label>
+    <input type="text" id="ticket-number" placeholder="Ej: 0094" />
+
+    <button onclick="buscarTicket()">Buscar Ticket</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const raffleSelect = document.getElementById('raffle-select');
+    const resultDiv = document.getElementById('result');
+    const TOKEN = 'technohammerAdmin';
+    const TOKENPUBLIC = 'technohammer';
+
+    // Cargar rifas al iniciar
+    async function cargarRifas() {
+      try {
+        const res = await fetch('https://api.ganaconlosprimos.com/raffles', {
+          headers: {
+            Authorization: `Bearer ${TOKENPUBLIC}`, // si solo quitas "admin", déjalo así
+          },
+        });
+        const data = await res.json();
+        raffleSelect.innerHTML = '<option value="">Selecciona una rifa</option>';
+        data.forEach(raffle => {
+          raffleSelect.innerHTML += `<option value="${raffle.id}">${raffle.name}</option>`;
+        });
+      } catch (err) {
+        raffleSelect.innerHTML = '<option value="">Error al cargar rifas</option>';
+        console.error(err);
+      }
+    }
+
+    cargarRifas();
+
+    // Buscar ticket por rifa
+    async function buscarTicket() {
+      const raffleId = raffleSelect.value;
+      const ticketNumber = document.getElementById('ticket-number').value.trim();
+
+      if (!raffleId || !ticketNumber) {
+        alert('Selecciona una rifa y escribe el número del ticket');
+        return;
+      }
+
+      const url = `https://api.ganaconlosprimos.com/tickets/${ticketNumber}/raffles/${raffleId}`;
+
+      try {
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${TOKEN}`, // si solo quitas "admin", déjalo así
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error('Ticket no encontrado');
+        }
+
+        const data = await res.json();
+        resultDiv.innerHTML = `
+          <h3>Resultado:</h3>
+          <p><strong>Ticket:</strong> ${data.number}</p>
+          <p><strong>Estado:</strong> ${data.status}</p>
+          <p><strong>Bendecido:</strong> ${data.isBlessed ? "Si" : "NO"}</p>
+          <p><strong>Nombre:</strong> ${data.user?.fullName}</p>
+          <p><strong>Cédula:</strong> ${data.user?.dni}</p>
+          <p><strong>Teléfono:</strong> ${data.user?.phone}</p>
+        `;
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:red;">${err.message}</p>`;
+        console.error(err);
+      }
+    }
+  </script>
+
+</body>
+</html>

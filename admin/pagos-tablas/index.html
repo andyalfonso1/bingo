@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Bingos</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+      }
+
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* SIDEBAR */
+
+      .sidebar {
+        width: 240px;
+        background: #111827;
+        color: white;
+        padding: 20px;
+      }
+
+      .sidebar h2 {
+        margin-top: 0;
+        margin-bottom: 30px;
+        font-size: 22px;
+      }
+
+      .sidebar a {
+        display: block;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+
+        color: white;
+        text-decoration: none;
+
+        transition: 0.2s;
+      }
+
+      .sidebar a:hover {
+        background: #1f2937;
+      }
+
+      .sidebar a.active {
+        background: #2563eb;
+      }
+
+      /* CONTENT */
+
+      .content {
+        flex: 1;
+        padding: 25px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+
+      .topbar h1 {
+        margin: 0;
+      }
+
+      .logout-btn {
+        background: #dc2626;
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      /* FILTERS */
+
+      .filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .filters input,
+      .filters select {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+
+      /* TABLE */
+
+      .table-wrapper {
+        overflow-x: auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 14px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+
+      th {
+        background: #2563eb;
+        color: white;
+      }
+
+      tr:hover {
+        background: #f9fafb;
+      }
+
+      .banner-img {
+        width: 90px;
+        height: 55px;
+        object-fit: cover;
+        border-radius: 6px;
+      }
+
+      /* BUTTONS */
+
+      .btn {
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: white;
+        margin-right: 5px;
+      }
+
+      .btn-manage {
+        background: #2563eb;
+      }
+
+      .btn-edit {
+        background: #f59e0b;
+      }
+
+      /* FAB */
+
+      .fab {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+
+        width: 60px;
+        height: 60px;
+
+        border-radius: 50%;
+        border: none;
+
+        background: #2563eb;
+        color: white;
+
+        font-size: 30px;
+        cursor: pointer;
+
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      /* MODAL */
+
+      .modal {
+        position: fixed;
+        inset: 0;
+
+        background: rgba(0, 0, 0, 0.6);
+
+        display: none;
+        align-items: center;
+        justify-content: center;
+
+        z-index: 9999;
+      }
+
+      .modal.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        width: 100%;
+        max-width: 550px;
+
+        padding: 25px;
+        border-radius: 12px;
+      }
+
+      .modal-content h2 {
+        margin-top: 0;
+      }
+
+      .modal-content input,
+      .modal-content textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 12px;
+
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      .flags {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+      }
+
+      .flags label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .preview {
+        width: 100%;
+        max-height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .btn-save {
+        background: #16a34a;
+      }
+
+      .btn-cancel {
+        background: #dc2626;
+      }
+
+      /* PAGINATION */
+
+      .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+
+      .pagination button {
+        padding: 8px 12px;
+        border: none;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      .pagination button.active {
+        background: #2563eb;
+        color: white;
+      }
+
+      /* LOGIN */
+
+      .login-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      .login-box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        width: 350px;
+      }
+
+      .login-box input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+
+      .login-box button {
+        width: 100%;
+        padding: 10px;
+
+        border: none;
+        border-radius: 8px;
+
+        background: #2563eb;
+        color: white;
+
+        cursor: pointer;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- LOGIN -->
+
+    <div id="login-screen" class="login-screen">
+      <div class="login-box">
+        <h2>Acceso Admin - Bingos</h2>
+
+        <input type="password" id="password" placeholder="Contraseña" />
+
+        <button onclick="login()">Entrar</button>
+      </div>
+    </div>
+
+    <!-- PANEL -->
+
+    <div id="admin-panel" class="layout hidden">
+      <!-- SIDEBAR -->
+
+      <aside class="sidebar">
+        <h2>🎯 Admin</h2>
+
+        <a href="./admin-dashboard.html"> Dashboard </a>
+
+        <a href="./admin-bingos.html" class="active"> Bingos </a>
+
+        <a href="./admin-payments.html"> Pagos </a>
+
+        <a href="./admin-prizes.html"> Premios </a>
+
+        <button
+          class="logout-btn"
+          onclick="logout()"
+          style="margin-top: 20px; width: 100%"
+        >
+          Cerrar sesión
+        </button>
+      </aside>
+
+      <!-- CONTENT -->
+
+      <main class="content">
+        <div class="topbar">
+          <h1>Administración de Bingos</h1>
+        </div>
+
+        <!-- FILTERS -->
+
+        <div class="filters">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Buscar bingo..."
+            oninput="handleSearch()"
+          />
+
+          <select id="status-filter" onchange="handleSearch()">
+            <option value="">Todos</option>
+
+            <option value="active">Activos</option>
+
+            <option value="inactive">Inactivos</option>
+          </select>
+        </div>
+
+        <!-- TABLE -->
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Banner</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Tickets</th>
+                <th>Activo</th>
+                <th>Oculto</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+
+        <div id="pagination" class="pagination"></div>
+      </main>
+    </div>
+
+    <!-- FAB -->
+
+    <button class="fab" onclick="openModal()">+</button>
+
+    <!-- MODAL -->
+
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h2>Crear Bingo</h2>
+
+        <form id="bingo-form">
+          <input type="text" id="name" placeholder="Nombre" required />
+
+          <textarea
+            id="description"
+            rows="4"
+            placeholder="Descripción"
+            required
+          ></textarea>
+
+          <input
+            type="number"
+            id="price"
+            placeholder="Precio"
+            step="0.01"
+            required
+          />
+
+          <input
+            type="number"
+            id="maxTickets"
+            placeholder="Total tickets"
+            required
+          />
+
+          <input
+            type="number"
+            id="maxTicketsBuy"
+            placeholder="Máximo por usuario"
+            required
+          />
+
+          <div class="flags">
+            <label>
+              <input type="checkbox" id="isActive" checked />
+              Activo
+            </label>
+
+            <label>
+              <input type="checkbox" id="isRandomized" />
+              Aleatorio
+            </label>
+
+            <label>
+              <input type="checkbox" id="isHidden" />
+              Oculto
+            </label>
+          </div>
+
+          <input type="file" id="banner" accept="image/*" />
+
+          <img id="preview" class="preview hidden" />
+
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-save">Crear</button>
+
+            <button type="button" class="btn btn-cancel" onclick="closeModal()">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:9082";
+      const ADMIN_LOGIN_URL = `${API_URL}/admin/login`;
+      const BINGOS_URL = `${API_URL}/bingos`;
+
+      let TOKEN = localStorage.getItem("admin_token");
+
+      let ALL_BINGOS = [];
+      let allBingos = [];
+
+      let currentPage = 1;
+      const rowsPerPage = 10;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        checkSession();
+        bindUI();
+      });
+
+      function checkSession() {
+        if (!TOKEN) return;
+
+        document.getElementById("login-screen").classList.add("hidden");
+
+        document.getElementById("admin-panel").classList.remove("hidden");
+
+        fetchBingos();
+      }
+
+      async function login() {
+        const password = document.getElementById("password").value.trim();
+
+        if (!password) {
+          alert("Ingrese contraseña");
+          return;
+        }
+
+        try {
+          const res = await fetch(ADMIN_LOGIN_URL, {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              password,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.message);
+          }
+
+          TOKEN = data.token;
+
+          localStorage.setItem("admin_token", TOKEN);
+
+          location.reload();
+        } catch (err) {
+          console.error(err);
+          alert("Credenciales inválidas");
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("admin_token");
+        location.reload();
+      }
+
+      async function fetchBingos() {
+        try {
+          const res = await fetch(BINGOS_URL, {
+            headers: {
+              Authorization: "Bearer " + TOKEN,
+            },
+          });
+
+          if (!res.ok) {
+            throw new Error("Error cargando bingos");
+          }
+
+          const data = await res.json();
+
+          ALL_BINGOS = data;
+          allBingos = data;
+
+          renderTable();
+          renderPagination();
+        } catch (err) {
+          console.error(err);
+          alert("Error cargando bingos");
+        }
+      }
+
+      function renderTable() {
+        const tbody = document.getElementById("table-body");
+
+        tbody.innerHTML = "";
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        const pageData = allBingos.slice(start, end);
+
+        if (!pageData.length) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8">
+                No hay bingos
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        pageData.forEach((bingo) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${bingo.id}</td>
+
+            <td>
+              <img
+                class="banner-img"
+                src="${API_URL}${bingo.bannerUrl}"
+              />
+            </td>
+
+            <td>${bingo.name}</td>
+
+            <td>
+              $${Number(bingo.price).toFixed(2)}
+            </td>
+
+            <td>
+              ${bingo.maxTickets}
+            </td>
+
+            <td>
+              ${bingo.isActive ? "✅ Sí" : "❌ No"}
+            </td>
+
+            <td>
+              ${bingo.isHidden ? "👁️ Oculto" : "🌎 Visible"}
+            </td>
+
+            <td>
+              <button
+                class="btn btn-manage"
+                onclick="manageTickets(${bingo.id})"
+              >
+                Gestionar
+              </button>
+
+              <button
+                class="btn btn-edit"
+                onclick="editBingo(${bingo.id})"
+              >
+                Editar
+              </button>
+            </td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      }
+
+      function renderPagination() {
+        const container = document.getElementById("pagination");
+
+        container.innerHTML = "";
+
+        const totalPages = Math.ceil(allBingos.length / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement("button");
+
+          btn.textContent = i;
+
+          if (i === currentPage) {
+            btn.classList.add("active");
+          }
+
+          btn.onclick = () => {
+            currentPage = i;
+            renderTable();
+            renderPagination();
+          };
+
+          container.appendChild(btn);
+        }
+      }
+
+      function handleSearch() {
+        const query = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+
+        const status = document.getElementById("status-filter").value;
+
+        allBingos = ALL_BINGOS.filter((bingo) => {
+          const matchesSearch = bingo.name.toLowerCase().includes(query);
+
+          const matchesStatus =
+            status === ""
+              ? true
+              : status === "active"
+                ? bingo.isActive
+                : !bingo.isActive;
+
+          return matchesSearch && matchesStatus;
+        });
+
+        currentPage = 1;
+
+        renderTable();
+        renderPagination();
+      }
+
+      function manageTickets(id) {
+        window.location.href = `./admin-tickets.html?bingoId=${id}`;
+      }
+
+      function editBingo(id) {
+        alert("Editar bingo " + id);
+      }
+
+      function openModal() {
+        document.getElementById("modal").classList.add("active");
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.remove("active");
+
+        document.getElementById("bingo-form").reset();
+
+        document.getElementById("preview").classList.add("hidden");
+      }
+
+      function bindUI() {
+        const form = document.getElementById("bingo-form");
+
+        const bannerInput = document.getElementById("banner");
+
+        const preview = document.getElementById("preview");
+
+        bannerInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+
+          if (!file) return;
+
+          preview.src = URL.createObjectURL(file);
+
+          preview.classList.remove("hidden");
+        });
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData();
+
+          formData.append("name", document.getElementById("name").value);
+
+          formData.append(
+            "description",
+            document.getElementById("description").value,
+          );
+
+          formData.append("price", document.getElementById("price").value);
+
+          formData.append(
+            "maxTickets",
+            document.getElementById("maxTickets").value,
+          );
+
+          formData.append(
+            "maxTicketsBuy",
+            document.getElementById("maxTicketsBuy").value,
+          );
+
+          formData.append(
+            "isActive",
+            document.getElementById("isActive").checked,
+          );
+
+          formData.append(
+            "isRandomized",
+            document.getElementById("isRandomized").checked,
+          );
+
+          formData.append(
+            "isHidden",
+            document.getElementById("isHidden").checked,
+          );
+
+          if (bannerInput.files[0]) {
+            formData.append("banner", bannerInput.files[0]);
+          }
+
+          try {
+            const res = await fetch(`${API_URL}/bingo`, {
+              method: "POST",
+
+              headers: {
+                Authorization: "Bearer " + TOKEN,
+              },
+
+              body: formData,
+            });
+
+            if (!res.ok) {
+              throw new Error("Error creando bingo");
+            }
+
+            alert("🎉 Bingo creado");
+
+            closeModal();
+
+            fetchBingos();
+          } catch (err) {
+            console.error(err);
+            alert("Error creando bingo");
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

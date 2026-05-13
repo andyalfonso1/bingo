@@ -1,0 +1,5 @@
+1.- Método para aprobar y rechazar pago bingo
+2.- Crear pagos bingo
+3.- Subir imágenes desde al admin y asociarlas a los id de los cartones
+4.- Crear bingo desde el admin
+5.- Asignación cartón aleatoriamente

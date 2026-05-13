@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel de Pagos</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: #f0f2f5;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .login,
+      .table-section {
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      .login {
+        margin-top: 100px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .login input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      .login button {
+        width: 100%;
+        padding: 10px;
+        background-color: #0077cc;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        margin-top: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+
+      th {
+        background-color: #0077cc;
+        color: white;
+      }
+
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      .btn {
+        padding: 6px 12px;
+        margin: 2px;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .btn-approve {
+        background-color: #28a745;
+      }
+      .btn-reject {
+        background-color: #dc3545;
+      }
+      .btn-detail {
+        background-color: #007bff;
+      }
+
+      img.proof {
+        max-height: 60px;
+        margin: 4px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: zoom-in;
+      }
+
+      .loading {
+        text-align: center;
+        margin-top: 50px;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <div id="login-section" class="login">
+      <h2>Acceso restringido</h2>
+      <input type="password" id="password" placeholder="Contraseña" />
+      <button onclick="checkPassword()">Entrar</button>
+    </div> -->
+
+    <div id="table-section" class="table-section">
+      <h2>Solicitudes de Pago</h2>
+      <label for="raffle-select"><strong>Filtrar por Rifa:</strong></label>
+      <select
+        id="raffle-select"
+        onchange="onRaffleChange()"
+        style="
+          margin-left: 10px;
+          padding: 5px 10px;
+          border-radius: 4px;
+          border: 1px solid #ccc;
+        "
+      >
+        <option value="">Todas las rifas</option>
+      </select>
+      <div id="loading" class="loading">Cargando datos...</div>
+      <div class="table-wrapper hidden" id="table-wrapper">
+        <table id="payments-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombres</th>
+              <th>Correo</th>
+              <th>Cédula</th>
+              <th>Teléfono</th>
+              <th>Cantidad</th>
+              <th>Monto</th>
+              <th>Referencia</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Detalles -->
+    <div
+      id="detail-modal"
+      class="hidden"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      "
+    >
+      <div
+        style="
+          background: white;
+          padding: 20px;
+          margin-left: 25%;
+          border-radius: 8px;
+          max-width: 600px;
+          width: 90%;
+          max-height: 90%;
+          overflow-y: auto;
+        "
+      >
+        <h3>Detalle del Pago</h3>
+        <div id="detail-content"></div>
+        <button
+          onclick="closeDetail()"
+          style="
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          "
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Los tokens empiezan vacíos
+      let TOKEN = "";
+      let TOKENPUBLIC = "";
+      const API_URL = "https://api.ganaconlosprimos.com/payments";
+      const RAFFLES_API_URL = "https://api.ganaconlosprimos.com/raffles";
+      // Tu nueva contraseña en base64
+      const ENCRYPTED_PASSWORD = "Q29tYTIwMjUheFEwMTk=";
+
+      // Tokens ofuscados en base64
+      const OBFUSCATED_TOKEN = "dGVjaG5vaGFtbWVyQWRtaW4=";
+      const OBFUSCATED_TOKENPUBLIC = "dGVjaG5vaGFtbWVy";
+
+      /*function decodeBase64(str) {
+        return atob(str);
+      }
+
+      function checkPassword() {
+        const input = document.getElementById("password").value.trim();
+        const decodedPassword = decodeBase64(ENCRYPTED_PASSWORD);
+        console.log("Input:", input, "| Decoded password:", decodedPassword);
+        console.log("Result:", input === decodedPassword);
+        if (input === decodedPassword) {
+          TOKEN = decodeBase64(OBFUSCATED_TOKEN);
+          TOKENPUBLIC = decodeBase64(OBFUSCATED_TOKENPUBLIC);
+          document.getElementById("login-section").classList.add("hidden");
+          document.getElementById("table-section").classList.remove("hidden");
+          loadRaffles();
+          fetchPayments();
+        } else {
+          alert("Contraseña incorrecta");
+        }
+      }
+
+      async function fetchPayments(raffleId = null) {
+        document.getElementById("loading").classList.remove("hidden");
+        document.getElementById("table-wrapper").classList.add("hidden");
+
+        let url = raffleId ? `${API_URL}/raffle/${raffleId}` : API_URL;
+
+        try {
+          const res = await fetch(url, {
+            headers: { Authorization: "Bearer " + TOKEN },
+          });
+          const data = await res.json();
+          renderTable(data);
+          document.getElementById("loading").classList.add("hidden");
+          document.getElementById("table-wrapper").classList.remove("hidden");
+        } catch (err) {
+          console.error("Error al obtener pagos:", err);
+          alert("Error al cargar los pagos");
+        }
+      }
+
+      async function loadRaffles() {
+        try {
+          const res = await fetch(RAFFLES_API_URL, {
+            headers: { Authorization: "Bearer " + TOKENPUBLIC },
+          });
+          const raffles = await res.json();
+          const select = document.getElementById("raffle-select");
+          raffles
+            .filter((r) => !r.isHidden)
+            .forEach((r) => {
+              const option = document.createElement("option");
+              option.value = r.id;
+              option.textContent = r.name;
+              select.appendChild(option);
+            });
+        } catch (err) {
+          console.error("Error al cargar rifas:", err);
+        }
+      }
+
+      function onRaffleChange() {
+        const selectedRaffleId = document.getElementById("raffle-select").value;
+        fetchPayments(selectedRaffleId || null); // Si vacío, carga todos
+      }
+
+      function renderTable(payments) {
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+        payments.forEach((p) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+        <td>${p.id}</td>
+        <td>${p.user?.fullName || "-"}</td>
+        <td>${p.user?.email || "-"}</td>
+        <td>${p.user?.dni || "-"}</td>
+        <td>${p.user?.phone || "-"}</td>
+        <td>${p.quantity || "-"}</td>
+        <td>${p.totalAmount || "-"}</td>
+        <td>${p.reference || "-"}</td>
+        <td>${p.status}</td>
+        <td>${renderActions(p)}</td>
+      `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function renderActions(payment) {
+        const buttons = [];
+        if (payment.status === "APPROVED") {
+          buttons.push(
+            `<button class="btn btn-reject" onclick="handleAction(${payment.id}, 'reject')">Rechazar</button>`,
+          );
+        } else if (payment.status === "PENDING") {
+          buttons.push(
+            `<button class="btn btn-approve" onclick="handleAction(${payment.id}, 'approve')">Aprobar</button>`,
+          );
+          buttons.push(
+            `<button class="btn btn-reject" onclick="handleAction(${payment.id}, 'reject')">Rechazar</button>`,
+          );
+        }
+        buttons.push(
+          `<button class="btn btn-detail" onclick="viewDetail(${payment.id})">Ver Detalles</button>`,
+        );
+        return buttons.join("");
+      }*/
+
+      function handleAction(id, action) {
+        if (
+          !confirm(
+            `¿Estás seguro de que deseas ${
+              action === "approve" ? "aprobar" : "rechazar"
+            } este pago?`,
+          )
+        )
+          return;
+
+        fetch(`${API_URL}/${id}/${action}`, {
+          method: "PUT",
+          headers: {
+            Authorization: "Bearer " + TOKEN,
+          },
+        })
+          .then((res) => {
+            if (res.ok) {
+              alert(
+                `Pago ${
+                  action === "approve" ? "aprobado" : "rechazado"
+                } correctamente.`,
+              );
+
+              // Buscar la fila correspondiente
+              const row = [...document.querySelectorAll("#table-body tr")].find(
+                (r) => r.firstElementChild.textContent == id,
+              );
+
+              if (row) {
+                // Actualizar la celda de estado
+                row.children[8].textContent =
+                  action === "approve" ? "APPROVED" : "REJECTED";
+                // Actualizar acciones
+                row.children[9].innerHTML = renderActions({
+                  id: id,
+                  status: action === "approve" ? "APPROVED" : "REJECTED",
+                });
+              }
+            } else {
+              alert("Error al realizar la acción");
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            alert("Error de red");
+          });
+      }
+
+      async function viewDetail(id) {
+        const res = await fetch(`${API_URL}/${id}`, {
+          headers: { Authorization: "Bearer " + TOKEN },
+        });
+        const data = await res.json();
+
+        let raffleDetailHtml = "";
+        if (data.tickets[0].raffleId) {
+          try {
+            const raffleRes = await fetch(
+              `https://api.ganaconlosprimos.com/raffles/${data.tickets[0].raffleId}`,
+              {
+                headers: { Authorization: "Bearer " + TOKENPUBLIC },
+              },
+            );
+            if (raffleRes.ok) {
+              const raffleData = await raffleRes.json();
+              raffleDetailHtml = `
+          <h4>Detalle de la Rifa</h4>
+          <p><strong>Nombre:</strong> ${raffleData.name}</p>
+          <p><strong>Precio por ticket:</strong> ${raffleData.price} Bs</p>
+        `;
+            }
+          } catch (error) {
+            console.error("Error cargando detalle de rifa:", error);
+          }
+        }
+
+        const detail = `
+    <p><strong>ID:</strong> ${data.id}</p>
+    <p><strong>Estado:</strong> ${data.status}</p>
+    <p><strong>Método:</strong> ${data.method}</p>
+    <p><strong>Moneda:</strong> ${data.currency}</p>
+    <p><strong>Cantidad:</strong> ${data.quantity}</p>
+    <p><strong>Total:</strong> ${data.totalAmount}</p>
+    <p><strong>Referencia:</strong> ${data.reference}</p>
+    <p><strong>Fecha:</strong> ${formatDate(data.createdAt)}</p>
+
+    <p><strong>Nombre:</strong> ${data.user.fullName}</p>
+    <p><strong>Email:</strong> ${data.user.email}</p>
+    <p><strong>Cédula:</strong> ${data.user.dni}</p>
+    <p><strong>Teléfono:</strong> ${data.user.phone}</p>
+
+    <h4>Comprobante</h4>
+    ${(data.proofUrls || [])
+      .map(
+        (url) => `
+      <a href="https://api.ganaconlosprimos.com/public${url}" target="_blank">
+        <img src="https://api.ganaconlosprimos.com/public${url}" class="proof" />
+      </a>
+    `,
+      )
+      .join("")}
+
+    <h4>Tickets</h4>
+    <ul>
+      ${(data.tickets || [])
+        .map((t) => `<li>Número: ${t.number}</li>`)
+        .join("")}
+    </ul>
+
+    ${raffleDetailHtml}
+  `;
+
+        document.getElementById("detail-content").innerHTML = detail;
+        document.getElementById("detail-modal").classList.remove("hidden");
+      }
+
+      function closeDetail() {
+        document.getElementById("detail-modal").classList.add("hidden");
+      }
+
+      function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleString("es-DO", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+    </script>
+  </body>
+</html>
