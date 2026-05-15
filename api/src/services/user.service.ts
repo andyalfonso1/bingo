@@ -17,7 +17,7 @@ export const userService = {
     const user = await prisma.user.findUnique({
       where: { id },
       include: {
-        payments: {
+        bingoPayments: {
           where: { status: "APPROVED" },
           orderBy: { createdAt: "desc" },
           include: {
@@ -34,14 +34,14 @@ export const userService = {
 
     if (!user) return null;
 
-    const paymentsFormatted = user.payments.map((payment) => ({
+    const bingoPaymentsFormatted = user.bingoPayments.map((payment) => ({
       ...payment,
       tickets: payment.assignments.map((a) => a.ticket),
     }));
 
     return {
       ...user,
-      payments: paymentsFormatted,
+      bingoPayments: bingoPaymentsFormatted,
     };
   },
 
@@ -49,7 +49,7 @@ export const userService = {
     const user = await prisma.user.findUnique({
       where: { dni },
       include: {
-        payments: {
+        bingoPayments: {
           where: { status: "APPROVED", bingoId },
           orderBy: { createdAt: "desc" },
           include: {
@@ -66,14 +66,14 @@ export const userService = {
 
     if (!user) return null;
 
-    const paymentsFormatted = user.payments.map((payment) => ({
+    const bingoPaymentsFormatted = user.bingoPayments.map((payment) => ({
       ...payment,
       tickets: payment.assignments.map((a) => a.ticket),
     }));
 
     return {
       ...user,
-      payments: paymentsFormatted,
+      bingoPayments: bingoPaymentsFormatted,
     };
   },
 
@@ -81,7 +81,7 @@ export const userService = {
     const user = await prisma.user.findUnique({
       where: { dni },
       include: {
-        payments: {
+        bingoPayments: {
           where: { status: "APPROVED" },
           orderBy: { createdAt: "desc" },
           include: {
@@ -98,14 +98,14 @@ export const userService = {
 
     if (!user) return null;
 
-    const paymentsFormatted = user.payments.map((payment) => ({
+    const bingoPaymentsFormatted = user.bingoPayments.map((payment) => ({
       ...payment,
       tickets: payment.assignments.map((a) => a.ticket),
     }));
 
     return {
       ...user,
-      payments: paymentsFormatted,
+      bingoPayments: bingoPaymentsFormatted,
     };
   },
 
@@ -144,7 +144,7 @@ export const userService = {
 
     // VALIDAR SI EXISTEN TICKETS NO DISPONIBLES
 
-    const usedTicketsCount = await prisma.ticketBingo.count({
+    const usedTicketsCount = await prisma.bingoTicket.count({
       where: {
         bingoId: id,
         status: {
@@ -181,7 +181,7 @@ export const userService = {
           });
         }
 
-        await prisma.ticketBingo.createMany({
+        await prisma.bingoTicket.createMany({
           data: newTickets,
         });
       }
@@ -191,7 +191,7 @@ export const userService = {
       if (data.maxTickets < existingBingo.maxTickets) {
         const limit = formatTicketNumber(data.maxTickets);
 
-        await prisma.ticketBingo.deleteMany({
+        await prisma.bingoTicket.deleteMany({
           where: {
             bingoId: id,
             number: {

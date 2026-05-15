@@ -84,7 +84,7 @@ export const bingoService = {
       }));
 
       // 4. Insertar en batch
-      await tx.ticketBingo.createMany({ data: tickets });
+      await tx.bingoTicket.createMany({ data: tickets });
 
       return bingo;
     });
@@ -100,7 +100,7 @@ export const bingoService = {
     }
 
     // TICKETS USADOS (RESERVED o SOLD)
-    const usedTicketsCount = await prisma.ticketBingo.count({
+    const usedTicketsCount = await prisma.bingoTicket.count({
       where: {
         bingoId: id,
         status: {
@@ -140,7 +140,7 @@ export const bingoService = {
           };
         });
 
-        await prisma.ticketBingo.createMany({
+        await prisma.bingoTicket.createMany({
           data: newTickets,
         });
       }
@@ -149,7 +149,7 @@ export const bingoService = {
       if (newMax < oldMax) {
         const toRemove = oldMax - newMax;
 
-        const availableTickets = await prisma.ticketBingo.findMany({
+        const availableTickets = await prisma.bingoTicket.findMany({
           where: {
             bingoId: id,
             status: TicketStatus.AVAILABLE,
@@ -158,7 +158,7 @@ export const bingoService = {
           take: toRemove,
         });
 
-        await prisma.ticketBingo.deleteMany({
+        await prisma.bingoTicket.deleteMany({
           where: {
             id: {
               in: availableTickets.map((t) => t.id),

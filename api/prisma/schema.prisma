@@ -15,21 +15,26 @@ model User {
   phone     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  // SISTEMA RIFA
   payment   payment[]
   ticket    ticket[]
+
+  // SISTEMA BINGO
+  bingoPayments BingoPayment[]
+  assignments   TicketAssignment[]
+  prizeWinners  BingoPrizeWinner[]
 
   @@map("user")
 }
 
-model Admin {
+model admin {
   id        Int      @id @default(autoincrement())
   fullName  String
   email     String   @unique(map: "Admin_email_key")
   password  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("admin")
+  updatedAt DateTime
 }
 
 model payment {
@@ -129,4 +134,143 @@ enum payment_status {
 enum users_role {
   user
   admin
+}
+
+model Bingo {
+  id            Int     @id @default(autoincrement())
+  name          String
+  description   String  @db.VarChar(1000)
+  price         Decimal @db.Decimal(10, 2)
+  maxTickets    Int
+  maxTicketsBuy Int
+  bannerUrl     String
+
+  isActive     Boolean @default(true)
+  isRandomized Boolean @default(false)
+  isHidden     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tickets  BingoTicket[]
+  payments BingoPayment[]
+  prizes   BingoPrize[]
+
+  @@map("bingo")
+}
+
+model BingoTicket {
+  id        Int          @id @default(autoincrement())
+  number    String
+  status    TicketStatus @default(AVAILABLE)
+  imgTicket String?
+
+  bingoId Int
+  bingo   Bingo @relation(fields: [bingoId], references: [id])
+
+  assignment TicketAssignment?
+  winners    BingoPrizeWinner[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bingoId, number])
+  @@map("bingo_tickets")
+}
+
+model BingoPayment {
+  id      Int @id @default(autoincrement())
+  userId  Int
+  bingoId Int
+
+  quantity    Int
+  totalAmount Decimal @db.Decimal(10, 2)
+
+  status PaymentStatus
+
+  proofs BingoPaymentProof[]
+
+  user  User  @relation(fields: [userId], references: [id])
+  bingo Bingo @relation(fields: [bingoId], references: [id])
+
+  assignments TicketAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bingo_payments")
+}
+
+model BingoPaymentProof {
+  id        Int    @id @default(autoincrement())
+  paymentId Int
+  url       String @db.VarChar(500)
+
+  createdAt DateTime @default(now())
+
+  payment BingoPayment @relation(fields: [paymentId], references: [id])
+
+  @@map("bingo_payment_proofs")
+}
+
+model TicketAssignment {
+  id Int @id @default(autoincrement())
+
+  ticketId  Int @unique
+  userId    Int
+  paymentId Int
+
+  ticket  BingoTicket  @relation(fields: [ticketId], references: [id])
+  user    User         @relation(fields: [userId], references: [id])
+  payment BingoPayment @relation(fields: [paymentId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("bingo_ticket_assignments")
+}
+
+model BingoPrize {
+  id      Int @id @default(autoincrement())
+  bingoId Int
+
+  name     String
+  position Int
+  amount   Decimal @db.Decimal(10, 2)
+
+  bingo Bingo @relation(fields: [bingoId], references: [id])
+
+  winners BingoPrizeWinner[]
+
+  createdAt DateTime @default(now())
+
+  @@map("bingo_prizes")
+}
+
+model BingoPrizeWinner {
+  id Int @id @default(autoincrement())
+
+  prizeId  Int
+  ticketId Int
+  userId   Int
+
+  prize  BingoPrize  @relation(fields: [prizeId], references: [id])
+  ticket BingoTicket @relation(fields: [ticketId], references: [id])
+  user   User        @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([prizeId, ticketId])
+  @@map("bingo_prize_winners")
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
 }
