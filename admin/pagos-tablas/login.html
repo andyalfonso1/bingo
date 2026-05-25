@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Admin Login</title>
+
+    <link rel="stylesheet" href="./assets/css/admin.css" />
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        background: #0f172a;
+
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 420px;
+        padding: 20px;
+      }
+
+      .login-card {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      }
+
+      .login-title {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .login-subtitle {
+        color: #9ca3af;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .label {
+        display: block;
+        color: #d1d5db;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .input {
+        width: 100%;
+      }
+
+      .login-btn {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .footer-text {
+        margin-top: 20px;
+        text-align: center;
+        color: #6b7280;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="login-container">
+      <div class="login-card">
+        <h1 class="login-title">🎯 Bingo Admin</h1>
+
+        <p class="login-subtitle">Ingrese la contraseña para acceder</p>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label class="label">Contraseña</label>
+
+            <input
+              type="password"
+              id="password"
+              class="input"
+              placeholder="********"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary login-btn">
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <div class="footer-text">Bingo Admin Panel</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script type="module" src="./assets/js/pages/login.page.js"></script>
+  </body>
+</html>

@@ -20,7 +20,10 @@ const app = Fastify();
 // 👉 habilitar CORS
 app.register(cors, {
   origin: "*",
-  methods: ["GET", "POST", "PUT"],
+
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
+  allowedHeaders: ["Content-Type", "Authorization"],
 });
 
 // Soporte para multipart/form-data

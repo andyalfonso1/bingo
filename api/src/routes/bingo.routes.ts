@@ -18,6 +18,36 @@ export async function bingoRoutes(fastify: FastifyInstance) {
     bingoController.getAll,
   );
 
+  fastify.get(
+    "/bingos/payments",
+    { preHandler: authMiddlewareAdmin },
+    bingoController.getPayments,
+  );
+
+  fastify.patch<{ Params: { id: string } }>(
+    "/bingos/payments/:id/approve",
+    { preHandler: authMiddlewareAdmin },
+    bingoController.approvePayment,
+  );
+
+  fastify.patch<{ Params: { id: string } }>(
+    "/bingos/payments/:id/reject",
+    { preHandler: authMiddlewareAdmin },
+    bingoController.rejectPayment,
+  );
+
+  fastify.patch<{ Params: { id: string } }>(
+    "/bingos/tickets/:id/image",
+    { preHandler: authMiddlewareAdmin },
+    bingoController.uploadTicketImage,
+  );
+
+  fastify.get<{ Params: { id: string } }>(
+    "/bingos/:id/tickets",
+    { preHandler: authMiddlewareAdmin },
+    bingoController.getTicketsByBingoId,
+  );
+
   fastify.get<{ Params: { id: string } }>(
     "/bingos/:id",
     { preHandler: authMiddleware },

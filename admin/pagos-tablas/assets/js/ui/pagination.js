@@ -1,53 +1,60 @@
 // assets/js/ui/pagination.js
 
-import {
-  getFilteredBingos,
-  getCurrentPage,
-  setCurrentPage,
-  getRowsPerPage,
-} from "../state/bingo.state.js";
-
-export function renderPagination(onPageChange) {
-  const container = document.getElementById("pagination");
-
-  console.log("RENDER PAGINATION");
+export function renderPagination({
+  containerId = "pagination",
+  currentPage = 1,
+  totalItems = 0,
+  rowsPerPage = 10,
+  onPageChange,
+}) {
+  const container = document.getElementById(containerId);
 
   if (!container) {
-    console.error("pagination no encontrado");
+    console.error(`pagination container "${containerId}" no encontrado`);
     return;
   }
 
   container.innerHTML = "";
 
-  const totalRows = getFilteredBingos().length;
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
 
-  const rowsPerPage = getRowsPerPage();
+  //if (totalPages <= 1) return;
 
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  // botón anterior
+  const prev = document.createElement("button");
+  prev.textContent = "‹";
+  prev.disabled = currentPage === 1;
 
-  console.log("FILTERED:", getFilteredBingos());
+  prev.addEventListener("click", () => {
+    onPageChange(currentPage - 1);
+  });
 
-  console.log("TOTAL PAGES:", totalPages);
-
-  /*if (totalPages <= 1) {
-    return;
-  }*/
+  container.appendChild(prev);
 
   for (let i = 1; i <= totalPages; i++) {
     const button = document.createElement("button");
 
     button.textContent = i;
 
-    if (i === getCurrentPage()) {
+    if (i === currentPage) {
       button.classList.add("active");
     }
 
     button.addEventListener("click", () => {
-      setCurrentPage(i);
-
-      onPageChange();
+      onPageChange(i);
     });
 
     container.appendChild(button);
   }
+
+  // botón siguiente
+  const next = document.createElement("button");
+  next.textContent = "›";
+  next.disabled = currentPage === totalPages;
+
+  next.addEventListener("click", () => {
+    onPageChange(currentPage + 1);
+  });
+
+  container.appendChild(next);
 }

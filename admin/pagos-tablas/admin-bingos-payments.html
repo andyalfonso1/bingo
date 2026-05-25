@@ -1,0 +1,149 @@
+<!doctype html>
+  <html lang="es">
+    <head>
+      <meta charset="UTF-8" />
+     
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+      <title>Admin - Pagos Bingo</title>
+
+      <link rel="stylesheet" href="./assets/css/admin.css" />
+
+    </head>
+
+    <body>
+       
+        <!-- PANEL -->
+
+        <div id="admin-panel" class="layout">
+          <!-- SIDEBAR -->
+
+          <div id="sidebar-container"></div>
+
+          <!-- OVERLAY -->
+
+          <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+          <!-- CONTENT -->
+
+          <main class="content">
+            <!-- TOPBAR -->
+
+           <div id="topbar-container"></div>
+
+            <!-- CARD -->
+
+            <div class="card">
+              <!-- FILTERS -->
+
+              <div class="filters">
+                <input
+                  type="text"
+                  id="search-input"
+                  class="input"
+                  placeholder="Buscar usuario o bingo..."
+                />
+
+                <select id="status-filter" class="select">
+                  <option value="">Todos los estados</option>
+
+                  <option value="PENDING">Pendientes</option>
+
+                  <option value="APPROVED">Aprobados</option>
+
+                  <option value="REJECTED">Rechazados</option>
+                </select>
+              </div>
+
+              <!-- TABLE -->
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+
+                      <th>Usuario</th>
+
+                      <th>Bingo</th>
+
+                      <th>Cantidad</th>
+
+                      <th>Total</th>
+
+                      <th>Comprobantes</th>
+
+                      <th>Estado</th>
+
+                      <th>Fecha</th>
+
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="table-body">
+                    <!-- DATA -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- PAGINATION -->
+
+              <div id="pagination" class="pagination"></div>
+            </div>
+          </main>
+        </div>
+
+        <!-- IMAGE PREVIEW MODAL -->
+
+        <div id="image-modal-container"></div>
+
+        <!-- SWEETALERT -->
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <!-- JS -->
+
+       <script type="module">
+          import { requireAdminAuth } from "./assets/js/guards/admin.guard.js";
+          import { initApp } from "./assets/js/app.js";
+
+          const allowed = requireAdminAuth();
+
+          if (allowed) {
+            initApp(
+              "./pages/admin-bingos-payments.js",
+              "initBingoPayments"
+            );
+          }
+        </script>
+
+         <script type="module">
+          import { renderAdminSidebar } from "./assets/js/components/admin-sidebar.js";
+
+          document.getElementById("sidebar-container").innerHTML =
+            renderAdminSidebar("payments");
+        </script>
+
+        <script type="module">
+          import { renderTopbar } from "./assets/js/components/topbar.component.js";
+
+          document.getElementById("topbar-container").innerHTML =
+            renderTopbar("Administración de Pagos");
+        </script>
+
+        <script type="module">
+          import {
+            renderImageModal,
+            initImageModalEvents,
+          } from "./assets/js/components/image-modal.component.js";
+
+          document.getElementById("image-modal-container").innerHTML =
+            renderImageModal();
+
+          initImageModalEvents();
+        </script>
+      </body>
+    </html>
+  </head>
+</html>

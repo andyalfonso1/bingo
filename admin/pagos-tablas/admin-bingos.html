@@ -11,82 +11,19 @@
   </head>
 
   <body>
-    <!-- LOGIN -->
-
-    <!--<div id="login-screen" class="login-screen">
-      <div class="login-box">
-        <h2>🎯 Acceso Admin</h2>
-
-        <input
-          type="password"
-          id="password"
-          class="input"
-          placeholder="Contraseña"
-        />
-
-        <button
-          class="btn btn-primary"
-          onclick="login()"
-          style="width: 100%; margin-top: 10px"
-        >
-          Entrar
-        </button>
-      </div>
-    </div>-->
-
-    <div id="login-screen" class="login-screen">
-      <div class="login-box">
-        <h2>🎯 Acceso Admin</h2>
-
-        <input
-          type="password"
-          id="password"
-          class="input"
-          placeholder="Contraseña"
-        />
-
-        <button
-          id="login-btn"
-          class="btn btn-primary"
-          style="width: 100%; margin-top: 10px"
-        >
-          Entrar
-        </button>
-      </div>
-    </div>
-
     <!-- PANEL -->
 
-    <div id="admin-panel" class="layout hidden">
+    <div id="admin-panel" class="layout">
       <!-- SIDEBAR -->
 
-      <aside class="sidebar">
-        <h2>🎯 Bingo Admin</h2>
-
-        <nav>
-          <a href="./admin-dashboard.html">📊 Dashboard</a>
-
-          <a href="./admin-bingos.html" class="active">🎰 Bingos</a>
-
-          <a href="./admin-tickets.html">🎟️ Tickets</a>
-
-          <a href="./admin-payments.html">💳 Pagos</a>
-
-          <a href="./admin-prizes.html">🏆 Premios</a>
-        </nav>
-
-        <button class="logout-btn">Cerrar sesión</button>
-      </aside>
+      <div id="sidebar-container"></div>
 
       <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
       <!-- CONTENT -->
 
       <main class="content">
-        <div class="topbar">
-          <button class="menu-toggle">☰</button>
-          <h1>Administración de Bingos</h1>
-        </div>
+        <div id="topbar-container"></div>
 
         <div class="card">
           <!-- FILTERS -->
@@ -134,10 +71,12 @@
       </main>
     </div>
 
+    <div id="image-modal-container"></div>
+
     <!-- FAB -->
 
     <!--<button class="fab" onclick="openModal()">+</button>-->
-    <button id="fab-button" class="fab hidden">+</button>
+    <button id="fab-button" class="fab">+</button>
 
     <!-- MODAL -->
 
@@ -256,15 +195,43 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="module" src="./assets/js/app.js"></script>
 
-    <!-- IMAGE PREVIEW MODAL -->
-    <div id="image-modal" class="image-modal" onclick="closeImageModal()">
-      <div class="image-modal-content" onclick="event.stopPropagation()">
-        <button class="image-modal-close" onclick="closeImageModal()">✕</button>
+    <script type="module">
+      import { requireAdminAuth } from "./assets/js/guards/admin.guard.js";
+      import { initApp } from "./assets/js/app.js";
 
-        <img id="image-modal-src" src="" alt="Banner ampliado" />
-      </div>
-    </div>
+      const allowed = requireAdminAuth();
+
+      if (allowed) {
+        initApp("./pages/admin-bingos.js", "initBingos");
+      }
+    </script>
+
+    <script type="module">
+      import { renderAdminSidebar } from "./assets/js/components/admin-sidebar.js";
+
+      document.getElementById("sidebar-container").innerHTML =
+        renderAdminSidebar("bingos");
+    </script>
+
+    <script type="module">
+      import { renderTopbar } from "./assets/js/components/topbar.component.js";
+
+      document.getElementById("topbar-container").innerHTML = renderTopbar(
+        "Administración de Bingos",
+      );
+    </script>
+
+    <script type="module">
+      import {
+        renderImageModal,
+        initImageModalEvents,
+      } from "./assets/js/components/image-modal.component.js";
+
+      document.getElementById("image-modal-container").innerHTML =
+        renderImageModal();
+
+      initImageModalEvents();
+    </script>
   </body>
 </html>

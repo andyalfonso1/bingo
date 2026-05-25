@@ -8,6 +8,217 @@ function formatTicketNumber(num: number): string {
 export const bingoService = {
   getAll: () => prisma.bingo.findMany(),
 
+  getPayments: async () => {
+    return await prisma.bingoPayment.findMany({
+      include: {
+        user: true,
+        bingo: true,
+        proofs: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  },
+
+  approvePayment: async (paymentId: number) => {
+    return await prisma.$transaction(async (tx) => {
+      // =========================
+      // BUSCAR PAGO
+      // =========================
+
+      const payment = await tx.bingoPayment.findUnique({
+        where: {
+          id: paymentId,
+        },
+      });
+
+      if (!payment) {
+        throw new Error("Pago no encontrado.");
+      }
+
+      // =========================
+      // VALIDAR STATUS
+      // =========================
+
+      if (payment.status !== "PENDING") {
+        throw new Error("Este pago ya fue procesado.");
+      }
+
+      // =========================
+      // OBTENER BINGO
+      // =========================
+
+      const bingo = await tx.bingo.findUnique({
+        where: {
+          id: payment.bingoId,
+        },
+      });
+
+      if (!bingo) {
+        throw new Error("Bingo no encontrado.");
+      }
+
+      // =========================
+      // BUSCAR TICKETS DISPONIBLES
+      // =========================
+
+      const availableTickets = await tx.bingoTicket.findMany({
+        where: {
+          bingoId: payment.bingoId,
+          status: "AVAILABLE",
+        },
+      });
+
+      // =========================
+      // VALIDAR DISPONIBILIDAD
+      // =========================
+
+      if (availableTickets.length < payment.quantity) {
+        throw new Error("No hay suficientes tickets disponibles.");
+      }
+
+      // =========================
+      // ASIGNACIÓN
+      // =========================
+
+      let selectedTickets = [];
+
+      // RANDOM
+      if (bingo.isRandomized) {
+        const shuffled = availableTickets.sort(() => Math.random() - 0.5);
+
+        selectedTickets = shuffled.slice(0, payment.quantity);
+      } else {
+        // SECUENCIAL
+
+        selectedTickets = availableTickets
+          .sort((a, b) => Number(a.number) - Number(b.number))
+          .slice(0, payment.quantity);
+      }
+
+      // =========================
+      // ACTUALIZAR TICKETS -> SOLD
+      // =========================
+
+      await tx.bingoTicket.updateMany({
+        where: {
+          id: {
+            in: selectedTickets.map((t) => t.id),
+          },
+        },
+        data: {
+          status: "SOLD",
+        },
+      });
+
+      // =========================
+      // CREAR ASIGNACIONES
+      // =========================
+
+      await tx.ticketAssignment.createMany({
+        data: selectedTickets.map((ticket) => ({
+          ticketId: ticket.id,
+          userId: payment.userId,
+          paymentId: payment.id,
+        })),
+      });
+
+      // =========================
+      // APROBAR PAGO
+      // =========================
+
+      const updatedPayment = await tx.bingoPayment.update({
+        where: {
+          id: payment.id,
+        },
+        data: {
+          status: "APPROVED",
+        },
+      });
+
+      return updatedPayment;
+    });
+  },
+
+  rejectPayment: async (paymentId: number) => {
+    const payment = await prisma.bingoPayment.findUnique({
+      where: {
+        id: paymentId,
+      },
+    });
+
+    if (!payment) {
+      throw new Error("Pago no encontrado.");
+    }
+
+    if (payment.status !== "PENDING") {
+      throw new Error("Este pago ya fue procesado.");
+    }
+
+    return await prisma.bingoPayment.update({
+      where: {
+        id: paymentId,
+      },
+      data: {
+        status: "REJECTED",
+      },
+    });
+  },
+
+  updateTicketImage: async (ticketId: number, imgTicket: string) => {
+    const ticket = await prisma.bingoTicket.findUnique({
+      where: {
+        id: ticketId,
+      },
+    });
+
+    if (!ticket) {
+      throw new Error("Cartón no encontrado.");
+    }
+
+    return await prisma.bingoTicket.update({
+      where: {
+        id: ticketId,
+      },
+      data: {
+        imgTicket,
+      },
+    });
+  },
+
+  /*getTicketsByBingoId: async (bingoId: number) => {
+    return await prisma.bingoTicket.findMany({
+      where: {
+        bingoId,
+      },
+      orderBy: {
+        number: "asc",
+      },
+    });
+  },*/
+
+  getTicketsByBingoId: async (bingoId: number) => {
+    return await prisma.bingoTicket.findMany({
+      where: {
+        bingoId,
+      },
+
+      include: {
+        assignment: {
+          include: {
+            user: true,
+            payment: true,
+          },
+        },
+      },
+
+      orderBy: {
+        number: "asc",
+      },
+    });
+  },
+
   getById: async (id: number) => {
     const bingoInfo = await prisma.bingo.findUnique({
       where: { id },

@@ -11,3 +11,4 @@ build
 api/node_modules
 api/.env
 api/prisma/migrations
+api/public/uploads

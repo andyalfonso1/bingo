@@ -18,6 +18,230 @@ export const bingoController = {
     reply.send(bingos);
   },
 
+  getPayments: async (_req: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const payments = await bingoService.getPayments();
+
+      return reply.send(payments);
+    } catch (error) {
+      console.error(error);
+
+      return reply.code(500).send({
+        message: "Error obteniendo pagos de bingo",
+      });
+    }
+  },
+
+  approvePayment: async (
+    req: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) => {
+    try {
+      const paymentId = Number(req.params.id);
+
+      const payment = await bingoService.approvePayment(paymentId);
+
+      return reply.send({
+        message: "Pago aprobado correctamente.",
+        payment,
+      });
+    } catch (error: any) {
+      //console.error(error);
+      console.log("ERROR:", error.message);
+
+      return reply.code(400).send({
+        message: error.message,
+      });
+    }
+  },
+
+  rejectPayment: async (
+    req: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) => {
+    try {
+      const paymentId = Number(req.params.id);
+
+      const payment = await bingoService.rejectPayment(paymentId);
+
+      return reply.send({
+        message: "Pago rechazado correctamente.",
+        payment,
+      });
+    } catch (error: any) {
+      console.error(error);
+
+      return reply.code(400).send({
+        message: error.message,
+      });
+    }
+  },
+
+  /*uploadTicketImage: async (
+    req: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) => {
+    const ticketId = Number(req.params.id);
+
+    const data = await req.file();
+
+    if (!data) {
+      return reply.code(400).send({
+        message: "Imagen requerida.",
+      });
+    }
+
+    // =========================
+    // VALIDAR EXTENSIÓN
+    // =========================
+
+    const extension = path.extname(data.filename);
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+
+    if (!allowedExtensions.includes(extension)) {
+      return reply.code(400).send({
+        message: "Formato inválido.",
+      });
+    }
+
+    // =========================
+    // NOMBRE FINAL
+    // =========================
+
+    const finalFileName = `ticket-${ticketId}${extension}`;
+
+    const finalPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      "uploads",
+      "tickets",
+      finalFileName,
+    );
+
+    // =========================
+    // GUARDAR
+    // =========================
+
+    await pump(data.file, fs.createWriteStream(finalPath));
+
+    const imgTicket = `/public/uploads/tickets/${finalFileName}`;
+
+    // =========================
+    // ACTUALIZAR DB
+    // =========================
+
+    const ticket = await bingoService.updateTicketImage(ticketId, imgTicket);
+
+    return reply.send({
+      message: "Imagen subida correctamente.",
+      ticket,
+    });
+  },*/
+
+  uploadTicketImage: async (
+    req: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) => {
+    const ticketId = Number(req.params.id);
+
+    console.log("UPLOAD TICKET IMAGE");
+    console.log("ticketId:", ticketId);
+
+    const data = await req.file();
+
+    console.log("DATA:", data);
+
+    if (!data) {
+      return reply.code(400).send({
+        message: "Imagen requerida.",
+      });
+    }
+
+    console.log("FILENAME:", data.filename);
+    console.log("MIMETYPE:", data.mimetype);
+
+    // =========================
+    // VALIDAR EXTENSIÓN
+    // =========================
+
+    const extension = path.extname(data.filename);
+
+    console.log("EXTENSION:", extension);
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+
+    if (!allowedExtensions.includes(extension)) {
+      return reply.code(400).send({
+        message: "Formato inválido.",
+      });
+    }
+
+    // =========================
+    // NOMBRE FINAL
+    // =========================
+
+    const finalFileName = `ticket-${ticketId}${extension}`;
+
+    const finalPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      "uploads",
+      "tickets",
+      finalFileName,
+    );
+
+    console.log("FINAL PATH:", finalPath);
+
+    // =========================
+    // GUARDAR
+    // =========================
+
+    if (!fs.existsSync(path.dirname(finalPath))) {
+      fs.mkdirSync(path.dirname(finalPath), { recursive: true });
+    }
+
+    await pump(data.file, fs.createWriteStream(finalPath));
+
+    const imgTicket = `/public/uploads/tickets/${finalFileName}`;
+
+    console.log("IMG URL:", imgTicket);
+
+    // =========================
+    // ACTUALIZAR DB
+    // =========================
+
+    const ticket = await bingoService.updateTicketImage(ticketId, imgTicket);
+
+    return reply.send({
+      message: "Imagen subida correctamente.",
+      ticket,
+    });
+  },
+
+  getTicketsByBingoId: async (
+    req: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) => {
+    try {
+      const bingoId = Number(req.params.id);
+
+      const tickets = await bingoService.getTicketsByBingoId(bingoId);
+
+      return reply.send(tickets);
+    } catch (error: any) {
+      console.error(error);
+
+      return reply.code(500).send({
+        message: error.message,
+      });
+    }
+  },
+
   getById: async (
     req: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply,
@@ -51,129 +275,6 @@ export const bingoController = {
 
     reply.send(bingo);
   },
-
-  /*create: async (req: FastifyRequest, reply: FastifyReply) => {
-    const parts = req.parts();
-
-    const data: any = {};
-    let bannerTempPath: string | null = null;
-    let bannerExtension: string | null = null;
-
-    for await (const part of parts) {
-      if (part.type === "file" && part.fieldname === "banner") {
-        console.log("📁 Archivo recibido:");
-        console.log("fieldname:", part.fieldname);
-        console.log("filename:", part.filename);
-        console.log("mimetype:", part.mimetype);
-
-        // Guardar archivo temporal
-        bannerExtension = path.extname(part.filename);
-        const tempName = `temp-${Date.now()}${bannerExtension}`;
-        const tempPath = path.join(
-          __dirname,
-          "..",
-          "..",
-          "public",
-          "uploads",
-          "banners",
-          tempName,
-        );
-
-        await pump(part.file, fs.createWriteStream(tempPath));
-        bannerTempPath = tempPath;
-      } else if (part.type === "field") {
-        data[part.fieldname] = part.value;
-      }
-    }
-
-    console.log("📦 DATA FINAL:");
-    console.log(data);
-
-    const {
-      name,
-      description,
-      maxTickets,
-      maxTicketsBuy,
-      price,
-      isActive,
-      isRandomized,
-      isHidden,
-    } = data;
-
-    if (
-      !name ||
-      !description ||
-      !maxTickets ||
-      !maxTicketsBuy ||
-      !price ||
-      !bannerTempPath
-    ) {
-      return reply.code(400).send({
-        message: "Todos los campos son obligatorios, incluido el banner.",
-      });
-    }
-
-    const maxTicketsNumber = Number(maxTickets);
-    const maxTicketsBuyNumber = Number(maxTicketsBuy);
-    const priceNumber = parseFloat(price);
-
-    if (
-      isNaN(maxTicketsNumber) ||
-      maxTicketsNumber <= 0 ||
-      isNaN(maxTicketsBuyNumber) ||
-      maxTicketsBuyNumber <= 0 ||
-      isNaN(priceNumber) ||
-      priceNumber < 0
-    ) {
-      return reply.code(400).send({ message: "Campos numéricos inválidos." });
-    }
-
-    try {
-      // Creamos la bingo primero, sin el bannerUrl
-      const bingo = await bingoService.create({
-        name,
-        description,
-        maxTickets: maxTicketsNumber,
-        maxTicketsBuy: maxTicketsBuyNumber,
-        bannerUrl: "", // temporal
-        price: priceNumber,
-        isActive: isActive === "true",
-        isRandomized: isRandomized === "true",
-        isHidden: isHidden === "true",
-      });
-
-      // Renombrar banner con el ID de la bingo
-      const finalFileName = `banner-${bingo.id}${bannerExtension}`;
-      const finalPath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "uploads",
-        "banners",
-        finalFileName,
-      );
-      fs.renameSync(bannerTempPath, finalPath);
-
-      // Construir URL pública
-      const bannerUrl = `/public/uploads/banners/${finalFileName}`;
-
-      // Actualizar la bingo con la URL del banner
-      const updatedBingo = await bingoService.update(bingo.id, {
-        bannerUrl,
-      });
-
-      reply.code(201).send({
-        message: "Bingo creado exitosamente.",
-        bingo: updatedBingo,
-      });
-    } catch (error: any) {
-      console.error("Error creando bingo:", error);
-      return reply
-        .code(500)
-        .send({ message: "Internal server error", error: error.message });
-    }
-  },*/
 
   create: async (req: FastifyRequest, reply: FastifyReply) => {
     const parts = req.parts();

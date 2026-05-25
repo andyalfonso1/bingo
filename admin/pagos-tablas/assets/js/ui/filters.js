@@ -1,12 +1,6 @@
 // assets/js/ui/filters.js
 
-import {
-  getAllBingos,
-  setFilteredBingos,
-  setCurrentPage,
-} from "../state/bingo.state.js";
-
-export function initFilters(onFilterChange) {
+export function initFilters({ state, onFilter }) {
   const searchInput = document.getElementById("search-input");
 
   const statusFilter = document.getElementById("status-filter");
@@ -16,39 +10,47 @@ export function initFilters(onFilterChange) {
     return;
   }
 
-  searchInput.addEventListener("input", () => {
-    handleFilters(onFilterChange);
-  });
+  function handleFilters() {
+    const search = searchInput.value.toLowerCase().trim();
 
-  statusFilter.addEventListener("change", () => {
-    handleFilters(onFilterChange);
-  });
-}
+    const status = statusFilter.value;
 
-function handleFilters(onFilterChange) {
-  const search = document
-    .getElementById("search-input")
-    .value.toLowerCase()
-    .trim();
+    let filtered = state.getAll();
 
-  const status = document.getElementById("status-filter").value;
+    // =========================
+    // SEARCH
+    // =========================
 
-  const filtered = getAllBingos().filter((bingo) => {
-    const matchesSearch = bingo.name.toLowerCase().includes(search);
+    if (search) {
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(search),
+      );
+    }
 
-    const matchesStatus =
-      status === ""
-        ? true
-        : status === "active"
-          ? bingo.isActive
-          : !bingo.isActive;
+    // =========================
+    // STATUS
+    // =========================
 
-    return matchesSearch && matchesStatus;
-  });
+    if (status === "active") {
+      filtered = filtered.filter((item) => item.isActive);
+    }
 
-  setFilteredBingos(filtered);
+    if (status === "inactive") {
+      filtered = filtered.filter((item) => !item.isActive);
+    }
 
-  setCurrentPage(1);
+    // =========================
+    // UPDATE STATE
+    // =========================
 
-  onFilterChange();
+    state.setFiltered(filtered);
+
+    state.setCurrentPage(1);
+
+    onFilter();
+  }
+
+  searchInput.addEventListener("input", handleFilters);
+
+  statusFilter.addEventListener("change", handleFilters);
 }

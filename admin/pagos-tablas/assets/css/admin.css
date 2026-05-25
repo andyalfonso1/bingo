@@ -286,6 +286,12 @@ table {
   border-collapse: collapse;
 }
 
+table img {
+  max-width: 60px;
+  max-height: 60px;
+  object-fit: cover;
+}
+
 th {
   background: #2563eb;
   color: white;
@@ -895,6 +901,13 @@ tr:hover {
   .modal-footer {
     padding: 18px;
   }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-weight: 500;
 }
 
 /* RESPONSIVE */
