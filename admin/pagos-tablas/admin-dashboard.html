@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Admin - Dashboard</title>
+
+    <link rel="stylesheet" href="./assets/css/admin.css" />
+  </head>
+
+  <body>
+    <!-- PANEL -->
+
+    <div id="admin-panel" class="layout">
+      <!-- SIDEBAR -->
+
+      <div id="sidebar-container"></div>
+
+      <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+      <!-- CONTENT -->
+
+      <main class="content">
+        <div id="topbar-container"></div>
+
+        <div class="dashboard-container">
+          <div class="dashboard-grid">
+            <div class="stats-card">
+              <h3>🎰 Bingos Totales</h3>
+              <p id="total-bingos">0</p>
+            </div>
+
+            <div class="stats-card">
+              <h3>✅ Bingos Activos</h3>
+              <p id="active-bingos">0</p>
+            </div>
+
+            <div class="stats-card">
+              <h3>💳 Pagos Totales</h3>
+              <p id="total-payments">0</p>
+            </div>
+
+            <div class="stats-card">
+              <h3>⏳ Pagos Pendientes</h3>
+              <p id="pending-payments">0</p>
+            </div>
+
+            <div class="stats-card">
+              <h3>✔️ Pagos Aprobados</h3>
+              <p id="approved-payments">0</p>
+            </div>
+
+            <div class="stats-card">
+              <h3>🎟️ Tickets Vendidos</h3>
+              <p id="sold-tickets">0</p>
+            </div>
+
+            <div class="stats-card">
+              <h3>💰 Ganancias Totales</h3>
+              <p id="total-revenue">$0.00</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- SCRIPTS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- SIDEBAR -->
+
+    <script type="module">
+      import { renderAdminSidebar } from "./assets/js/components/admin-sidebar.js";
+
+      document.getElementById("sidebar-container").innerHTML =
+        renderAdminSidebar("dashboard");
+    </script>
+
+    <!-- TOPBAR -->
+
+    <script type="module">
+      import { renderTopbar } from "./assets/js/components/topbar.component.js";
+
+      document.getElementById("topbar-container").innerHTML =
+        renderTopbar("Dashboard Bingos");
+    </script>
+
+    <!-- APP -->
+
+    <script type="module">
+      import { requireAdminAuth } from "./assets/js/guards/admin.guard.js";
+      import { initApp } from "./assets/js/app.js";
+
+      async function start() {
+        const allowed = await requireAdminAuth();
+
+        if (!allowed) return;
+
+        await initApp("./pages/admin-dashboard.js", "initDashboard");
+      }
+
+      start();
+    </script>
+  </body>
+</html>

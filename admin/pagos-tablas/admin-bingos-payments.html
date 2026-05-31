@@ -102,36 +102,26 @@
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        <!-- JS -->
+        <!-- JS -->             
 
-       <script type="module">
-          import { requireAdminAuth } from "./assets/js/guards/admin.guard.js";
-          import { initApp } from "./assets/js/app.js";
-
-          const allowed = requireAdminAuth();
-
-          if (allowed) {
-            initApp(
-              "./pages/admin-bingos-payments.js",
-              "initBingoPayments"
-            );
-          }
-        </script>
-
-         <script type="module">
+        <!-- SIDEBAR -->
+        <script type="module">
           import { renderAdminSidebar } from "./assets/js/components/admin-sidebar.js";
 
           document.getElementById("sidebar-container").innerHTML =
             renderAdminSidebar("payments");
         </script>
 
+        <!-- TOPBAR -->
         <script type="module">
           import { renderTopbar } from "./assets/js/components/topbar.component.js";
 
-          document.getElementById("topbar-container").innerHTML =
-            renderTopbar("Administración de Pagos");
+          document.getElementById("topbar-container").innerHTML = renderTopbar(
+            "Administración de Pagos",
+          );
         </script>
 
+        <!-- IMAGE MODAL -->
         <script type="module">
           import {
             renderImageModal,
@@ -142,6 +132,18 @@
             renderImageModal();
 
           initImageModalEvents();
+        </script>
+
+        <!-- APP -->
+        <script type="module">
+          import { requireAdminAuth } from "./assets/js/guards/admin.guard.js";
+          import { initApp } from "./assets/js/app.js";
+
+          const allowed = requireAdminAuth();
+
+          if (allowed) {
+            initApp("./pages/admin-bingos-payments.js", "initBingoPayments");
+          }
         </script>
       </body>
     </html>

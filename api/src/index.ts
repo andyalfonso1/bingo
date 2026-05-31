@@ -9,6 +9,7 @@ import jwt from "@fastify/jwt";
 import { userRoutes } from "./routes/user.routes";
 import { adminRoutes } from "./routes/admin.routes";
 import { bingoRoutes } from "./routes/bingo.routes";
+import { dashboardRoutes } from "./routes/dashboard.routes";
 //import { paymentRoutes } from "./routes/payment.routes";
 //import { ticketRoutes } from "./routes/ticket.routes";
 //import { ticketBingoRoutes } from "./routes/ticketBingo.routes";
@@ -49,6 +50,10 @@ app.register(adminRoutes);
 //app.register(paymentRoutes);
 //app.register(ticketRoutes);
 app.register(bingoRoutes);
+// ✅ DASHBOARD
+app.register(dashboardRoutes, {
+  prefix: "/api/dashboard",
+});
 //app.register(ticketBingoRoutes);
 
 // 👉 iniciar servidor

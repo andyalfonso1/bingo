@@ -1,3 +1,5 @@
+// api/src/controllers/bingo.controller.ts
+
 import { FastifyReply, FastifyRequest } from "fastify";
 import fs from "fs";
 import path from "path";

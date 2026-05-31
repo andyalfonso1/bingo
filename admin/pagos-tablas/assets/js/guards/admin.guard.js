@@ -1,11 +1,10 @@
 // admin/pagos-tablas/assets/js/guards/admin.guard.js
 
-import { isAuthenticated } from "../utils/auth.js";
+import { isAuthenticated, forceLogout } from "../utils/auth.js";
 
-export function requireAdminAuth() {
+export async function requireAdminAuth() {
   if (!isAuthenticated()) {
-    window.location.href = "./login.html";
-
+    await forceLogout();
     return false;
   }
 

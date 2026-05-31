@@ -19,6 +19,7 @@ import {
   setModalTitle,
   setSubmitText,
   setEditingId,
+  getEditingId,
   isEditing,
   closeModal,
 } from "../ui/modal.js";

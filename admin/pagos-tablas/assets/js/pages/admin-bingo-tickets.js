@@ -56,8 +56,13 @@ function initFilters() {
   bingoFilter?.addEventListener("change", async () => {
     const bingoId = Number(bingoFilter.value);
 
-    if (!bingoId) {
+    /*if (!bingoId) {
       tableBody.innerHTML = "";
+      return;
+    }*/
+
+    if (!bingoId) {
+      clearTicketsView();
       return;
     }
 
@@ -67,11 +72,21 @@ function initFilters() {
   searchInput?.addEventListener("input", filterTickets);
 }
 
+const paginationContainer = document.getElementById("pagination");
+
+function clearTicketsView() {
+  ticketsState.setAll([]);
+  ticketsState.setFiltered([]);
+  ticketsState.setCurrentPage(1);
+
+  tableBody.innerHTML = "";
+  paginationContainer.innerHTML = "";
+}
 // =========================
 // LOAD BINGOS
 // =========================
 
-async function loadBingos() {
+/*async function loadBingos() {
   try {
     const bingos = await getBingos();
 
@@ -89,6 +104,61 @@ async function loadBingos() {
   } catch (error) {
     console.error(error);
     await errorAlert("Error", "No se pudieron cargar los bingos");
+  }
+}*/
+
+/*async function loadBingos() {
+  try {
+    const bingos = await getBingos();
+
+    console.log("Tipo:", typeof bingos);
+    console.log("Valor:", bingos);
+
+    bingoFilter.innerHTML = `<option value="">Seleccionar bingo</option>`;
+
+    bingoFilter.innerHTML += bingos
+      .map(
+        (bingo) => `
+          <option value="${bingo.id}">
+            ${bingo.name}
+          </option>
+        `,
+      )
+      .join("");
+  } catch (error) {
+    console.error(error);
+    await errorAlert("Error", "No se pudieron cargar los bingos");
+  }
+}*/
+
+async function loadBingos() {
+  try {
+    const bingos = await getBingos();
+
+    bingoFilter.innerHTML = `<option value="">Seleccionar bingo</option>`;
+
+    if (!Array.isArray(bingos)) {
+      tableBody.innerHTML = renderEmptyState({
+        colspan: 6,
+        message: bingos.message || "No hay bingos disponibles",
+      });
+
+      return;
+    }
+
+    bingoFilter.innerHTML += bingos
+      .map(
+        (bingo) => `
+          <option value="${bingo.id}">
+            ${bingo.name}
+          </option>
+        `,
+      )
+      .join("");
+  } catch (error) {
+    console.error(error);
+
+    await errorAlert("Sin datos", error.message || "No hay bingos disponibles");
   }
 }
 

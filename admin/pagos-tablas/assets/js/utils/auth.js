@@ -12,8 +12,33 @@ export function clearToken() {
   localStorage.removeItem("admin_token");
 }
 
-export function isAuthenticated() {
+/*export function isAuthenticated() {
   return !!getToken();
+}*/
+
+export function isAuthenticated() {
+  const token = getToken();
+
+  if (!token) {
+    return false;
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+
+    const now = Math.floor(Date.now() / 1000);
+
+    // TOKEN EXPIRADO
+    if (payload.exp <= now) {
+      clearToken();
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    clearToken();
+    return false;
+  }
 }
 
 // LOGOUT AUTOMÁTICO
@@ -27,7 +52,7 @@ export async function forceLogout() {
     confirmButtonText: "Aceptar",
   });
 
-  location.reload();
+  window.location.href = "./login.html";
 }
 
 // LOGOUT MANUAL
@@ -53,5 +78,6 @@ export async function logout() {
     showConfirmButton: false,
   });
 
-  location.reload();
+  //location.reload();
+  window.location.href = "./login.html";
 }

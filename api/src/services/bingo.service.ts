@@ -380,7 +380,18 @@ export const bingoService = {
     }
 
     // ❌ NO permitir cambiar random si hay ventas
-    if (typeof data.isRandomized !== "undefined" && usedTicketsCount > 0) {
+    /*if (typeof data.isRandomized !== "undefined" && usedTicketsCount > 0) {
+      throw new Error(
+        "No se puede modificar isRandomized porque hay tickets vendidos o reservados.",
+      );
+    }*/
+
+    // ❌ NO permitir cambiar random si hay ventas
+    if (
+      typeof data.isRandomized !== "undefined" &&
+      data.isRandomized !== existingBingo.isRandomized &&
+      usedTicketsCount > 0
+    ) {
       throw new Error(
         "No se puede modificar isRandomized porque hay tickets vendidos o reservados.",
       );

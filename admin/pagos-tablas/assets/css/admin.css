@@ -878,6 +878,13 @@ tr:hover {
   text-align: center;
 }
 
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   /*.sidebar {
     display: none;
@@ -901,13 +908,6 @@ tr:hover {
   .modal-footer {
     padding: 18px;
   }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 20px;
-  color: #888;
-  font-weight: 500;
 }
 
 /* RESPONSIVE */
@@ -937,3 +937,112 @@ tr:hover {
     width: 100%;
   }
 }
+
+/* =========================
+   DASHBOARD FINAL
+========================= */
+
+.dashboard-container {
+  background: #f3f4f6;
+  border-radius: 24px;
+  padding: 30px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+
+/* TARJETAS */
+
+.dashboard-grid .stats-card {
+  background: #ffffff;
+
+  border-radius: 22px;
+
+  padding: 28px 24px;
+
+  text-align: center;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.04),
+    0 10px 25px rgba(0, 0, 0, 0.06);
+
+  transition: all 0.25s ease;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+/* HOVER */
+
+.dashboard-grid .stats-card:hover {
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* TITULO */
+
+.dashboard-grid .stats-card h3 {
+  font-size: 15px;
+
+  font-weight: 600;
+
+  color: #6b7280;
+
+  margin-bottom: 18px;
+}
+
+/* NUMERO */
+
+.dashboard-grid .stats-card p {
+  font-size: 42px;
+
+  font-weight: 800;
+
+  color: #111827;
+
+  margin: 0;
+}
+
+/* COLORES */
+
+.dashboard-grid .stats-card:nth-child(1) {
+  border-top: 5px solid #3b82f6;
+}
+
+.dashboard-grid .stats-card:nth-child(2) {
+  border-top: 5px solid #22c55e;
+}
+
+.dashboard-grid .stats-card:nth-child(3) {
+  border-top: 5px solid #f59e0b;
+}
+
+.dashboard-grid .stats-card:nth-child(4) {
+  border-top: 5px solid #ef4444;
+}
+
+.dashboard-grid .stats-card:nth-child(5) {
+  border-top: 5px solid #10b981;
+}
+
+.dashboard-grid .stats-card:nth-child(6) {
+  border-top: 5px solid #8b5cf6;
+}
+
+.dashboard-grid .stats-card:nth-child(7) {
+  border-top: 5px solid #14b8a6;
+}
+
+/*body {
+  background: red !important;
+}*/

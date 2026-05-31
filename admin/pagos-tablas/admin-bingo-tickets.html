@@ -84,19 +84,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- APP -->
-
-    <script type="module">
-      import { requireAdminAuth } from "./assets/js/guards/admin.guard.js";
-      import { initApp } from "./assets/js/app.js";
-
-      const allowed = requireAdminAuth();
-
-      if (allowed) {
-        initApp("./pages/admin-bingo-tickets.js", "initTickets");
-      }
-    </script>
-
     <script type="module">
       import { renderAdminSidebar } from "./assets/js/components/admin-sidebar.js";
 
@@ -122,6 +109,19 @@
         renderImageModal();
 
       initImageModalEvents();
+    </script>
+
+    <!-- APP -->
+
+    <script type="module">
+      import { requireAdminAuth } from "./assets/js/guards/admin.guard.js";
+      import { initApp } from "./assets/js/app.js";
+
+      const allowed = requireAdminAuth();
+
+      if (allowed) {
+        initApp("./pages/admin-bingo-tickets.js", "initTickets");
+      }
     </script>
   </body>
 </html>

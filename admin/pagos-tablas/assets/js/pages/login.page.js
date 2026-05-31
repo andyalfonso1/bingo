@@ -4,7 +4,7 @@ import { API_URL } from "../config/api.js";
 import { setToken, isAuthenticated } from "../utils/auth.js";
 
 if (isAuthenticated()) {
-  window.location.href = "./admin-bingos.html";
+  window.location.href = "./admin-dashboard.html";
 }
 
 const form = document.getElementById("login-form");
@@ -62,7 +62,7 @@ form.addEventListener("submit", async (e) => {
       showConfirmButton: false,
     });
 
-    window.location.href = "./admin-bingos.html";
+    window.location.href = "./admin-dashboard.html";
   } catch (error) {
     Swal.fire({
       icon: "error",
